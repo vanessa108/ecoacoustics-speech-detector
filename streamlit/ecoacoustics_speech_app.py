@@ -39,14 +39,16 @@ def evaluate_minute(speech):
     if speech > 0:
         return 1
     return 0
-
+st.set_page_config(page_title='Speech Detector')
 # load model 
-path = './speech_detection_model/'
-model = tf.saved_model.load(path)
 my_classes = ['not speech', 'speech']
 map_class_to_id = {'not speech':0, 'speech':1}
 hop_length = 0.48
-
+@st.cache
+def load_model():
+    path = './speech_detection_model/'
+    return tf.saved_model.load(path)
+model = load_model()
 # uploaded_file = st.file_uploader('File uploader', type=['wav'])
 # if uploaded_file != None:
 #     f = tempfile.NamedTemporaryFile()
@@ -62,7 +64,8 @@ def process_audio(uploaded_file):
     output = model(audio).numpy()
     results = speech_second2minute(output)
     return results
-st.set_page_config(page_title='Speech Detector')
+
+
 def main():
     st.title('Speech detector for ecoacoustics')
     #st.header('hello')

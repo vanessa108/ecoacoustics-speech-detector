@@ -41,7 +41,7 @@ def evaluate_minute(speech):
     return 0
 
 # load model 
-path = 'D:/vanes/Documents/GitHub/speech-filtering/DeepLearning/model_5/'
+path = './speech_detection_model/'
 model = tf.saved_model.load(path)
 my_classes = ['not speech', 'speech']
 map_class_to_id = {'not speech':0, 'speech':1}

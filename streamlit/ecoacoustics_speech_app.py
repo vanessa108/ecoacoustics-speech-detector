@@ -5,7 +5,9 @@ import tempfile
 import numpy as np
 from math import ceil
 import pandas as pd
-
+from librosa import load, resample
+import soundfile as sf
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 def load_wav_16k_mono(filename):
     # """ Load a WAV file, convert it to a float tensor, resample to 16 kHz single-channel audio. """
     file_contents = tf.io.read_file(filename)
@@ -44,22 +46,25 @@ st.set_page_config(page_title='Speech Detector')
 my_classes = ['not speech', 'speech']
 map_class_to_id = {'not speech':0, 'speech':1}
 hop_length = 0.48
+
 @st.cache
 def load_model():
     path = './speech_detection_model/'
     return tf.saved_model.load(path)
 model = load_model()
-# uploaded_file = st.file_uploader('File uploader', type=['wav'])
-# if uploaded_file != None:
-#     f = tempfile.NamedTemporaryFile()
-#     f.write(uploaded_file.getbuffer())
-#     audio = load_wav_16k_mono(f.name)
-#     output = model(audio).numpy()
-#     st.write(np.argmax(output))
+
+def downsample_audio(uploaded_file):
+    # f = tempfile.NamedTemporaryFile()
+    # f.write(uploaded_file.getbuffer())
+    y, sr = load(uploaded_file)
+    y_16k = resample(y, sr, 16000)
+    #f.close()
+    return y_16k
 # input: uploaded file object, output: if a minute contains speech
-def process_audio(uploaded_file):
-    f = tempfile.NamedTemporaryFile()
-    f.write(uploaded_file.getbuffer())
+def process_audio(down_sampled_audio):
+    f = tempfile.NamedTemporaryFile(suffix='.wav')
+    sf.write(f, down_sampled_audio, 16000)
+    # f.write(uploaded_file.getbuffer())
     audio = load_wav_16k_mono(f.name)
     output = model(audio).numpy()
     results = speech_second2minute(output)
@@ -72,7 +77,8 @@ def main():
     uploaded_file = st.file_uploader('Upload a WAV file',  type=['wav'])
     #st.selectbox('Choose an output', ['CSV', 'audio files'])
     if uploaded_file:
-        speech_detected = process_audio(uploaded_file)
+        down_audio = downsample_audio(uploaded_file)
+        speech_detected = process_audio(down_audio)
         minutes = np.arange(0, len(speech_detected))
         results = pd.DataFrame()
         results['Minute'] = minutes

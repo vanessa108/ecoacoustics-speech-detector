@@ -66,6 +66,7 @@ def process_audio(down_sampled_audio):
     sf.write(f, down_sampled_audio, 16000)
     # f.write(uploaded_file.getbuffer())
     audio = load_wav_16k_mono(f.name)
+    f.close()
     output = model(audio).numpy()
     results = speech_second2minute(output)
     return results

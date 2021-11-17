@@ -5,6 +5,7 @@ import tempfile
 import numpy as np
 from math import ceil
 import pandas as pd
+from sound import sound
 
 def load_wav_16k_mono(filename):
     # """ Load a WAV file, convert it to a float tensor, resample to 16 kHz single-channel audio. """
@@ -49,6 +50,8 @@ def load_model():
     path = './speech_detection_model/'
     return tf.saved_model.load(path)
 model = load_model()
+
+
 # uploaded_file = st.file_uploader('File uploader', type=['wav'])
 # if uploaded_file != None:
 #     f = tempfile.NamedTemporaryFile()
@@ -71,6 +74,19 @@ def main():
     #st.header('hello')
     uploaded_file = st.file_uploader('Upload a WAV file',  type=['wav'])
     #st.selectbox('Choose an output', ['CSV', 'audio files'])
+    if st.button('Record'):
+        with st.spinner('Recording for 3 seconds....'):
+            sound.record()
+        st.success("Recording completed")
+        audio = load_wav_16k_mono("recorded.wav")
+        output = model(audio).numpy()
+        speech_detected = speech_second2minute(output)
+        minutes = np.arange(0, len(speech_detected))
+        results = pd.DataFrame()
+        results['Minute'] = minutes
+        results['Speech Detected'] = speech_detected
+        st.dataframe(results)
+        
     if uploaded_file:
         speech_detected = process_audio(uploaded_file)
         minutes = np.arange(0, len(speech_detected))

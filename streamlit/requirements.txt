@@ -2,3 +2,6 @@ numpy==1.21.2
 pandas
 tensorflow
 tensorflow_io
+PyYAML
+scipy
+librosa

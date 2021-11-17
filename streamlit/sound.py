@@ -1,28 +1,14 @@
 import pyaudio, wave
 import librosa, librosa.display
-# from pygame import mixer
 from scipy.io.wavfile import write
-#from setup_logging import setup_logging
-
-# from settings import DURATION, DEFAULT_SAMPLE_RATE, MAX_INPUT_CHANNELS, \
-#                                     WAVE_OUTPUT_FILE, INPUT_DEVICE, CHUNK_SIZE
-# from setup_logging import setup_logging
-# import sounddevice as sd
-# import soundfile as sf
-
-# setup_logging()
-# logger = logging.getLogger('src.sound')
 
 class Sound(object):
     def __init__(self):
-        # Set default configurations for recording device
-        # sd.default.samplerate = DEFAULT_SAMPLE_RATE
-        # sd.default.channels = DEFAULT_CHANNELS
         self.format = pyaudio.paInt16
         self.channels = 1
         self.sample_rate = 44100
         self.chunk = 1024
-        self.duration = 3
+        self.duration = 2
         self.path = ("recorded.wav")
         self.device = 0
         self.frames = []

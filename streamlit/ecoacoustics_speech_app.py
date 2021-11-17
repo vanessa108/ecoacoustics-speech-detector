@@ -6,7 +6,8 @@ import numpy as np
 from math import ceil
 import pandas as pd
 from sound import sound
-
+import matplotlib.pyplot as plt
+import librosa, librosa.display
 def load_wav_16k_mono(filename):
     # """ Load a WAV file, convert it to a float tensor, resample to 16 kHz single-channel audio. """
     file_contents = tf.io.read_file(filename)
@@ -66,16 +67,17 @@ def process_audio(uploaded_file):
     audio = load_wav_16k_mono(f.name)
     output = model(audio).numpy()
     results = speech_second2minute(output)
-    return results
+    return results, f.name
 
 
 def main():
     st.title('Speech detector for ecoacoustics')
-    #st.header('hello')
-    uploaded_file = st.file_uploader('Upload a WAV file',  type=['wav'])
+    upload_container = st.container()
+    record_container = st.container()
+    uploaded_file = upload_container.file_uploader('Upload a WAV file',  type=['wav'])
     #st.selectbox('Choose an output', ['CSV', 'audio files'])
-    if st.button('Record'):
-        with st.spinner('Recording for 3 seconds....'):
+    if record_container.button('Record'):
+        with st.spinner('Recording for 2 seconds....'):
             sound.record()
         st.success("Recording completed")
         audio = load_wav_16k_mono("recorded.wav")
@@ -85,15 +87,23 @@ def main():
         results = pd.DataFrame()
         results['Minute'] = minutes
         results['Speech Detected'] = speech_detected
-        st.dataframe(results)
+        record_container.dataframe(results)
         
     if uploaded_file:
-        speech_detected = process_audio(uploaded_file)
+        speech_detected, filename = process_audio(uploaded_file)
+        y, sr = librosa.load(uploaded_file)
+        D = librosa.stft(y)  # STFT of y
+        S_db = librosa.amplitude_to_db(np.abs(D), ref=np.max)
+        fig, ax = plt.subplots()
+        img = librosa.display.specshow(S_db, x_axis='time', y_axis='linear', ax=ax)
+        ax.set(title='Spectrogram of uploaded audio')
+        fig.colorbar(img, ax=ax, format="%+2.f dB")
+        upload_container.pyplot(fig)
         minutes = np.arange(0, len(speech_detected))
         results = pd.DataFrame()
         results['Minute'] = minutes
         results['Speech Detected'] = speech_detected
-        st.dataframe(results)
+        upload_container.dataframe(results)
 
 if __name__ == "__main__":
     main()

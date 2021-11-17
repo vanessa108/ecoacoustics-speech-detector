@@ -5,3 +5,4 @@ tensorflow_io
 PyYAML
 scipy
 librosa
+PyAudio
